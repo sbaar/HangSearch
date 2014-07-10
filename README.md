@@ -14,4 +14,4 @@ If the user is verified they will see the orange verified badge, otherwise the b
 
 I use volley's image caching so the avatar url will only have to be downloaded once.
 
-I have put more comments explaining each class at the top of each file and the function of the code throughout in helper classes like UserSQLHelper and ListAdapter. If you would like to see the source code of the other apps I've made they're already on github and I only have to grant access.
+I have put more comments explaining each class at the top of each file and the function of the code throughout in helper classes like UserSQLHelper and ListAdapter. All non-presentation code is production quality. If you would like to see the source code of the other apps I've made they're already on github and I only have to grant access.
