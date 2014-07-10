@@ -5,9 +5,12 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.LoaderManager.LoaderCallbacks;
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
@@ -32,16 +35,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-/**
- * A login screen that offers login via email/password.
-
- */
 public class SearchActivity extends Activity {
 
 
-    /**
-     * Keep track of the login task to ensure we can cancel it if requested.
-     */
 
     // UI references.
     private EditText mUserBox;
@@ -49,6 +45,8 @@ public class SearchActivity extends Activity {
     private View mSearchForm;
     private Button mSearchButton;
     private Activity mActivity;
+    private IntentReceiver mIntentReciever;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,10 +54,13 @@ public class SearchActivity extends Activity {
         setContentView(R.layout.activity_login);
         mActivity = this;
 
+        mIntentReciever = new IntentReceiver();
+
         mUserBox = (EditText) findViewById(R.id.user_text_box);
         mSearchForm = findViewById(R.id.search_form);
         mProgressView = findViewById(R.id.progressBar);
         mSearchButton = (Button)findViewById(R.id.search_button);
+
 
         mUserBox.addTextChangedListener(getSearchBoxChangedListener()); //add form validation function
 
@@ -72,10 +73,12 @@ public class SearchActivity extends Activity {
             @Override
             public void onClick(View v) {
 
+                mUserBox.setEnabled(false);
                 Intent i = new Intent(mActivity, SearchIntentService.class);
                 i.setAction(SearchIntentService.ACTION_USER_SEARCH);
                 i.putExtra(SearchIntentService.EXTRA_USER_NAME,mUserBox.getText().toString());
                 startService(i);
+                showProgress(true);
             }
         });
 
@@ -86,7 +89,17 @@ public class SearchActivity extends Activity {
         super.onSaveInstanceState(extra);
         extra.putString("userBox", mUserBox.getText().toString());
     }
+    @Override
+    public void onResume(){
+        super.onResume();
+        registerReceiver(mIntentReciever, new IntentFilter(SearchIntentService.COMPLETED));
 
+    }
+    @Override
+    public void onPause(){
+        super.onPause();
+        unregisterReceiver(mIntentReciever);
+    }
 
     /**
      *
@@ -112,9 +125,22 @@ public class SearchActivity extends Activity {
             }
         };
         }
-
+private class IntentReceiver extends BroadcastReceiver{
+    @Override
+    public void onReceive(Context context, Intent intent)
+    {
+        String action = intent.getAction();
+        if(action.equalsIgnoreCase(SearchIntentService.COMPLETED)){
+           showProgress(false);
+           mUserBox.setEnabled(true);
+            Intent i = new Intent(mActivity,ListActivity.class );
+            startActivity(i);
+        }
+    }
+}
     /**
-     * Shows the progress UI and hides the form.
+     * Show or hide the progress indicator
+     * @param show whether the progress bar should be shown or hidden
      */
     public void showProgress(final boolean show) {
         // Show and animate the indeterminate progress bar while we search.

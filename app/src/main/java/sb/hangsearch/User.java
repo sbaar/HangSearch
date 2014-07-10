@@ -1,7 +1,7 @@
 package sb.hangsearch;
 
 /**
- * Created by DouglasW on 7/9/2014.
+ * Created by ScottB on 7/9/2014.
  */
 public class User {
 

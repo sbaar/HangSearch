@@ -2,14 +2,17 @@ package sb.hangsearch;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import java.sql.SQLClientInfoException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by DouglasW on 7/9/2014.
+ * Created by ScottB on 7/9/2014.
  */
 public class UserSQLHelper  extends SQLiteOpenHelper{
     public static UserSQLHelper mInstance = null;
@@ -30,12 +33,12 @@ public class UserSQLHelper  extends SQLiteOpenHelper{
             + TABLE_USERS + "(" + COL_ID + " integer primary key AUTOINCREMENT, "
             + COL_OBJECT_ID + " TEXT, "
             + COL_BROADCAST_COUNT + " INTEGER, "
-            + COL_BROADCASTING + " TEXT, " //0 for false, 1 for true
+            + COL_BROADCASTING + " INTEGER, " //0 for false, 1 for true
             + COL_FOLLOWER_COUNT + " INTEGER, "
             + COL_FOLLOWING_COUNT + " INTEGER, "
             + COL_NAME + " TEXT, "
             + COL_USERNAME + " TEXT, "
-            + COL_AVATAR_URL + " TEXT, "
+            + COL_AVATAR_URL + " TEXT "
             + ")";
 
     private UserSQLHelper(Context context){
@@ -102,5 +105,38 @@ public class UserSQLHelper  extends SQLiteOpenHelper{
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
+    }
+
+    public List<User> getUserList() {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = null;
+        List<User> userList = new ArrayList<User>();
+        User user;
+        try{
+            cursor = db.query(TABLE_USERS,null,null,null,null,null,null);   //get all users
+            if (cursor != null)
+            while (cursor.moveToNext()) {
+                user = new User();
+                user.setObjectID(cursor.getString(1));
+                user.setBroadcast_count(cursor.getInt(2));
+                user.setBroadcasting(cursor.getInt(3) == 1);
+                user.setFollower_count(cursor.getInt(4));
+                user.setFollowing_count(cursor.getInt(5));
+                user.setName(cursor.getString(6));
+                user.setUsername(cursor.getString(7));
+                user.setAvatarURL(cursor.getString(8));
+                userList.add(user);
+            }
+
+        }
+        catch (Exception e){
+            Log.e("DB get user error: ", e.toString());
+
+        }
+        finally {
+            if (cursor != null) cursor.close();
+            if (db != null) db.close();
+        }
+        return userList;
     }
 }

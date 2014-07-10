@@ -1,6 +1,7 @@
 package sb.hangsearch;
 
 import android.app.IntentService;
+import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
@@ -32,13 +33,16 @@ public class SearchIntentService extends IntentService {
     //the extras that come with our intents
     public static final String EXTRA_USER_NAME = "sb.hangsearch.extra.EXTRA_USER_NAME";
     public static final String baseUserSearchURL = "https://api-v1.hangwith.com/v1/users?username=";
+    public static final String COMPLETED = "sb.hangsearch.action.COMPLETED";
 
     public SearchIntentService() {
         super("SearchIntentService");
     }
 
+    private Context mContext;
     @Override
     protected void onHandleIntent(Intent intent) {
+        mContext = this;
         if (intent != null) {
             final String action = intent.getAction();
             if (ACTION_USER_SEARCH.equals(action)) {
@@ -64,32 +68,36 @@ public class SearchIntentService extends IntentService {
                 List<User> userList = new ArrayList<User>();
                 User u;
                 JSONObject userJSON;
+                //parse the json for each object and put it in a list.
                 try {
                     for (int i = 0; i < response.length(); i++) {
                         u = new User();
                         userJSON = response.getJSONObject(i);
-                        u.setBroadcast_count(userJSON.getInt("broadcast_count"));
-                        u.setBroadcasting(userJSON.getBoolean("broadcasting"));
-                        u.setFollower_count(userJSON.getInt("follower_count"));
-                        u.setFollowing_count(userJSON.getInt("following_count"));
-                        u.setName(userJSON.getString("name"));
-                        u.setUsername(userJSON.getString("username"));
-                        u.setAvatarURL((userJSON.getString("avatar_url")));
+                        u.setObjectID(userJSON.optString("objectId"));
+                        u.setBroadcast_count(userJSON.optInt("broadcast_count"));
+                        u.setBroadcasting(userJSON.optBoolean("broadcasting"));
+                        u.setFollower_count(userJSON.optInt("follower_count"));
+                        u.setFollowing_count(userJSON.optInt("following_count"));
+                        u.setName(userJSON.optString("name"));
+                        u.setUsername(userJSON.optString("username"));
+                        u.setAvatarURL((userJSON.optString("avatar_url")));
 
                         userList.add(u);
                     }
+                    UserSQLHelper.getInstance(mContext).overWriteUsers(userList);
                 }
                 catch (JSONException e){
                     Log.d("JSON parse error", e.toString());
 
+
                 }
+                sendBroadcast(new Intent(COMPLETED));
             }
         }, new Response.ErrorListener() {
 
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.d("error", error.toString());
-                // TODO Auto-generated method stub
 
             }
         });
