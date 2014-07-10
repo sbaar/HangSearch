@@ -1,4 +1,4 @@
-Click on the release_apk.apk and then view raw to download the apk. Transfer it to your device then open it in a file explorer like ES explorer to install.
+Click on the release_apk.apk and then view raw to download the apk. Transfer it to your device then open it in a file explorer like ES explorer to install. To build it yourself, download android studio .81 and open the project folder.
 
 Here is a brief high level overview of the program:
 
