@@ -29,6 +29,10 @@
             android:name=".ListActivity"
             android:label="@string/title_activity_list" >
         </activity>
+        <activity
+            android:name=".UserDetailActivity"
+            android:label="@string/title_activity_user_detail" >
+        </activity>
     </application>
 
     <!-- To auto-complete the email text field in the login form with the user's emails -->

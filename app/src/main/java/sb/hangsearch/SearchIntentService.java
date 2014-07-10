@@ -81,13 +81,17 @@ public class SearchIntentService extends IntentService {
                         u.setName(userJSON.optString("name"));
                         u.setUsername(userJSON.optString("username"));
                         u.setAvatarURL((userJSON.optString("avatar_url")));
+                        u.setVerified((userJSON.optBoolean("verified")));
 
+                        //userJSON.getString("err");    //uncomment this line to test the JSON parse error
                         userList.add(u);
                     }
                     UserSQLHelper.getInstance(mContext).overWriteUsers(userList);
                 }
                 catch (JSONException e){
                     Log.d("JSON parse error", e.toString());
+                    sendBroadcast(new Intent(COMPLETED).putExtra("error", "JSON parse error: " + e.toString()));
+                    return;
 
 
                 }
@@ -98,6 +102,8 @@ public class SearchIntentService extends IntentService {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.d("error", error.toString());
+                sendBroadcast(new Intent(COMPLETED).putExtra("error", "Volley Network error: " + error.toString()));
+                return;
 
             }
         });

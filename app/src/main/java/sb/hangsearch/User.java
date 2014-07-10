@@ -1,6 +1,7 @@
 package sb.hangsearch;
 
 /**
+ * class to hold the user data from json
  * Created by ScottB on 7/9/2014.
  */
 public class User {
@@ -13,9 +14,18 @@ public class User {
     private String name;
     private String username;
     private String avatarURL;
-
+    private boolean verified;
 
     //generated getters and setters
+    public boolean isVerified() {
+        return verified;
+    }
+
+    public void setVerified(boolean verified) {
+        this.verified = verified;
+    }
+
+
     public String getObjectID() {
         return objectID;
     }

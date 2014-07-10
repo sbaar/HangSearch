@@ -31,13 +31,15 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Launcher class where the user can enter a search and views the progress indicator.
+ */
 public class SearchActivity extends Activity {
-
-
 
     // UI references.
     private EditText mUserBox;
@@ -54,10 +56,10 @@ public class SearchActivity extends Activity {
         setContentView(R.layout.activity_login);
         mActivity = this;
 
-        mIntentReciever = new IntentReceiver();
+        mIntentReciever = new IntentReceiver();//the broadcast receiver for completion
 
         mUserBox = (EditText) findViewById(R.id.user_text_box);
-        mSearchForm = findViewById(R.id.search_form);
+        mSearchForm = findViewById(R.id.search_form);   //what to hide when we show progress
         mProgressView = findViewById(R.id.progressBar);
         mSearchButton = (Button)findViewById(R.id.search_button);
 
@@ -73,12 +75,12 @@ public class SearchActivity extends Activity {
             @Override
             public void onClick(View v) {
 
-                mUserBox.setEnabled(false);
+                mUserBox.setEnabled(false); //to remove focus and hide keyboard
                 Intent i = new Intent(mActivity, SearchIntentService.class);
                 i.setAction(SearchIntentService.ACTION_USER_SEARCH);
-                i.putExtra(SearchIntentService.EXTRA_USER_NAME,mUserBox.getText().toString());
+                i.putExtra(SearchIntentService.EXTRA_USER_NAME,mUserBox.getText().toString());//user name search parameter
                 startService(i);
-                showProgress(true);
+                showProgress(true); //show indeterminate progress
             }
         });
 
@@ -92,7 +94,7 @@ public class SearchActivity extends Activity {
     @Override
     public void onResume(){
         super.onResume();
-        registerReceiver(mIntentReciever, new IntentFilter(SearchIntentService.COMPLETED));
+        registerReceiver(mIntentReciever, new IntentFilter(SearchIntentService.COMPLETED));     //receiver should only be active when the activity is
 
     }
     @Override
@@ -125,16 +127,28 @@ public class SearchActivity extends Activity {
             }
         };
         }
+
+    /**
+     * Receives the completion event from SearchIntentService and either forwards the user to ListActivty or displays an error
+     */
 private class IntentReceiver extends BroadcastReceiver{
     @Override
     public void onReceive(Context context, Intent intent)
     {
         String action = intent.getAction();
         if(action.equalsIgnoreCase(SearchIntentService.COMPLETED)){
-           showProgress(false);
-           mUserBox.setEnabled(true);
-            Intent i = new Intent(mActivity,ListActivity.class );
-            startActivity(i);
+           showProgress(false); //disable progress indicator
+           mUserBox.setEnabled(true);   //re enable search box
+            String errString = intent.getStringExtra("error");
+
+            if (errString == null) {    //there was no error, lets look at the results
+                Intent i = new Intent(mActivity, ListActivity.class);
+                startActivity(i);
+            }
+            else                        //there was an error, show it to the user
+                Toast.makeText(context,errString, Toast.LENGTH_LONG).show();
+
+
         }
     }
 }
@@ -146,6 +160,7 @@ private class IntentReceiver extends BroadcastReceiver{
         // Show and animate the indeterminate progress bar while we search.
         int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
+        //fade out search form
         mSearchForm.setVisibility(show ? View.GONE : View.VISIBLE);
         mSearchForm.animate().setDuration(shortAnimTime).alpha(
                 show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
@@ -155,6 +170,7 @@ private class IntentReceiver extends BroadcastReceiver{
             }
         });
 
+        //fade in search form
         mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
         mProgressView.animate().setDuration(shortAnimTime).alpha(
                 show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
