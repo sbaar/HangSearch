@@ -55,6 +55,7 @@ public class UserDetailActivity extends Activity {
 
         //color badge if verified
         if (user.isVerified()) verifyImageView.setImageResource(R.drawable.icon_verified);
+        else verifyImageView.setImageResource(R.drawable.icon_verified_grey);
     }
 
 
